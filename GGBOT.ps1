@@ -11,7 +11,7 @@
 $getdate = Get-Date -Format "yyyyMMdd"
 
 # If it's a new day, and a log file doesn't exist, create the log and it's corresponding counter file
-if ((Test-Path ".\place1_$(Get-Date -Format "yyyyMMdd").txt") -and (-not (Test-Path ".\GGBOT_LOGS_$getdate.txt"))) { # Test to see if new chat log file has been created. If not, create the file and provide the header.
+if ((Test-Path ".\place2_$(Get-Date -Format "yyyyMMdd").txt") -and (-not (Test-Path ".\GGBOT_LOGS_$getdate.txt"))) { # Test to see if new chat log file has been created. If not, create the file and provide the header.
     Write-Output "########## GGBOT LOG FOR $getdate ##########" > "GGBOT_LOGS_$getdate.txt"
     Write-Output "0" > "counter_$getdate.txt"
 }
@@ -33,7 +33,7 @@ $newItems = $entry.Length # This gets the new line count from the file.
 
 if ($oldItems -lt $newItems) { # Test if the number of previously counted lines differs from the current line count.
     Foreach ($line in $oldItems..$newItems) { 
-        if ($entry[$line].Contains($bravo[1]) -or $entry[$line].Contains($bravo[2]) -and (-not $entry[$line].Split(" ")[1].Contains("$alpha"))) { 
+        if ($entry[$line].Contains($bravo[1]) -or $entry[$line].Contains($bravo[2]) -and (-not $entry[$line].Split(" ")[0].Contains("$alpha"))) { 
             
             ### Init Variables ###
             $newEntry = $entry[$line] 
@@ -42,7 +42,7 @@ if ($oldItems -lt $newItems) { # Test if the number of previously counted lines 
             ### The function for all excel inputs will live here. ###
             # Open the workbook
             $excelEntry = New-Object -comobject Excel.Application
-            $openExcel = $excelEntry.Workbooks.Open("C:\Path\To\Document\log.xlsx")
+            $openExcel = $excelEntry.Workbooks.Open("C:\Users\bluep\Desktop\Sandbox\Data Entry Bot\shift.xlsx")
             $selectSheet = $openExcel.Sheets.Item(1) # This needs to check date and return abbreviation of the month
 
             # Go into the sheet and add to cells. 
@@ -55,7 +55,7 @@ if ($oldItems -lt $newItems) { # Test if the number of previously counted lines 
             switch ("($gamma)") {
                 "($($echo[1]))" {$bravoCol += $foxtrot[1]}
                 "($($echo[2]))" {$bravoCol += $foxtrot[2]}
-                default {"N/A"}
+                default {$bravoCol += "<Couldn't determine>"}
             }
             $bravoCol += " ($($newEntry.Split(" ")[3])) $($newEntry.Split(" ")[2])"
             $selectSheet.Cells.Item($row,2).value2 = "$bravoCol"
@@ -66,8 +66,9 @@ if ($oldItems -lt $newItems) { # Test if the number of previously counted lines 
             $excelEntry.Quit()
 
             ### Write to Bot Log ###
+            $ErrorActionPreference = "SilentlyContinue"
             Write-Output "[$(Get-Date -Format "HH:mm")][FROM LINE: $line TO ROW: $row][$newEntry]" >> "GGBOT_LOGS_$getdate.txt" # Add the new entry to the log and add a time stamp and cell number
-            Write-Host "[$(Get-Date -Format "HH:mm")][CELL] > New Entry from line: $line to row: $row"
+            Write-Host "[$(Get-Date -Format "HH:mm")][FROM LINE: $line TO ROW: $row][$newEntry]"
 
         }
      }
